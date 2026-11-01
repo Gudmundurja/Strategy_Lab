@@ -142,7 +142,7 @@ Strategy_Lab/
 ## Models and conventions
 
 The full technical documentation, with every formula, design decision and limitation, is in
-[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md). In short:
+[docs/Strategy_Lab_DOCUMENTATION.pdf](docs/Strategy_Lab_DOCUMENTATION.pdf). In short:
 
 **Options.** Black-Scholes-Merton with continuous rates and dividend yield (use the foreign rate for FX).
 Days are calendar days on a 365-day year. Theta is per calendar day, vega per vol point, rho per 1% rate move.
@@ -200,5 +200,4 @@ regulatory reporting system.
 I built this with Claude, Anthropic's AI assistant, as a pair programmer. I set the scope and direction
 (which strategies, products, models and techniques to cover, and how the app should work), and Claude wrote
 most of the code, tests and documentation. The results are checked by the test suite: every Monte Carlo price
-with a closed-form counterpart is tested against it, and the formulas are cross-checked against each other
-(see [section 16 of the documentation](docs/DOCUMENTATION.md#16-testing-and-verification)).
+with a closed-form counterpart is tested against it, and the formulas are cross-checked against each other.
