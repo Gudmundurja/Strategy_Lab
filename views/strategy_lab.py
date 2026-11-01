@@ -8,28 +8,16 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from derivlab import Leg, Market, Position, VolModel, charts, presets, sizing
+from derivlab import Market, Position, charts, presets, sizing
 from derivlab.fmt import money, pct
 from derivlab.position import DAYS_PER_YEAR
 from derivlab.pricing import bs_price
 
-SMILES = {
-    "Flat (textbook Black-Scholes)": (0.0, 0.0),
-    "Equity index put skew": (-0.035, 0.006),
-    "FX-style smile": (-0.003, 0.008),
-    "Custom": None,
-}
-MULTIPLIERS = {
-    "1 · per unit of underlying": 1,
-    "10 · e.g. Euro Stoxx 50 index options": 10,
-    "50 · e.g. options on E-mini S&P 500 futures": 50,
-    "100 · US equity and SPX options": 100,
-    "1,000 · e.g. crude oil futures options": 1000,
-    "Custom": None,
-}
+from views.shared import (COLUMNS, MULTIPLIERS, SMILES, current_market, current_multiplier, init_state, parse_legs,
+                          reset_legs)
+
 VOL_SHIFTS = [-20, -15, -10, -5, -2, 0, 2, 5, 10, 15, 20, 30]
 GREEK_SIGN = {"+": "+", "-": "−", "0": "0", "±": "±"}
-COLUMNS = ["Side", "Qty", "Type", "Strike", "Days", "Premium"]
 LEG_COLUMNS = {
     "Side": st.column_config.SelectboxColumn("Side", options=["Buy", "Sell"], required=True),
     "Qty": st.column_config.NumberColumn("Qty", help="Contracts per lot", min_value=0, step=1, format="%d", required=True),
@@ -39,60 +27,13 @@ LEG_COLUMNS = {
     "Premium": st.column_config.NumberColumn("Premium override", min_value=0.0, format="%.4f",
                                              help="The price per unit you actually traded at. Leave blank to use the model price."),
 }
-DEFAULTS = dict(spot=100.0, rate=4.0, div=0.0, atm=25.0, smile_shape="Flat (textbook Black-Scholes)", skew=-3.5, smile=0.6,
-                sticky="Sticky strike", mult_choice="100 · US equity and SPX options", mult_custom=100.0, lots=1,
-                strategy="bull-call-spread", days=30, budget=10_000.0, basis="Max loss at expiry", stress_rng=20, hedge_mult=1.0,
-                grid_rng=20, grid_vols=[-10, -5, 0, 5, 10, 20], pay_vol=0)
+PAGE_DEFAULTS = dict(budget=10_000.0, basis="Max loss at expiry", stress_rng=20, hedge_mult=1.0, grid_rng=20,
+                     grid_vols=[-10, -5, 0, 5, 10, 20], pay_vol=0)
 
 ss = st.session_state
-for _k, _v in DEFAULTS.items():
-    ss.setdefault(_k, _v)
-
-
-# ---------------------------------------------------------------- legs state
-def preset_frame(strategy_id: str, spot: float, days: int) -> pd.DataFrame:
-    rows = []
-    for l in presets.get(strategy_id).make_legs(spot, days):
-        rows.append({"Side": l.side, "Qty": abs(l.qty), "Type": l.kind.title() if l.is_option else "Underlying",
-                     "Strike": l.strike if l.is_option else np.nan, "Days": l.days if l.is_option else np.nan,
-                     "Premium": np.nan})
-    return pd.DataFrame(rows, columns=COLUMNS).astype({"Qty": "float64", "Strike": "float64", "Days": "float64", "Premium": "float64"})
-
-
-def reset_legs():
-    ss.legs_df = preset_frame(ss.strategy, float(ss.spot), int(ss.days))
-    ss.legs_saved = ss.legs_df
-    ss.legs_ver = ss.get("legs_ver", 0) + 1
-
-
-if "legs_df" not in ss:
-    reset_legs()
-elif f"legs_{ss.legs_ver}" not in ss and "legs_saved" in ss:
+init_state(PAGE_DEFAULTS)
+if f"legs_{ss.legs_ver}" not in ss and "legs_saved" in ss:
     ss.legs_df = ss.legs_saved          # coming back from another page: restore the last edits
-
-
-def parse_legs(df: pd.DataFrame):
-    legs, problems = [], []
-    for i, r in enumerate(df.to_dict("records"), start=1):
-        side, qty, typ = r.get("Side"), r.get("Qty"), r.get("Type")
-        if side not in ("Buy", "Sell") or typ not in ("Call", "Put", "Underlying") or qty is None or pd.isna(qty):
-            continue                                           # incomplete row, e.g. just added
-        if qty <= 0:
-            continue
-        q = float(qty) if side == "Buy" else -float(qty)
-        if typ == "Underlying":
-            legs.append(Leg("underlying", q))
-            continue
-        K, D, prem = r.get("Strike"), r.get("Days"), r.get("Premium")
-        if K is None or pd.isna(K) or K <= 0:
-            problems.append(f"Row {i}: enter a positive strike.")
-            continue
-        if D is None or pd.isna(D) or D < 1:
-            problems.append(f"Row {i}: enter days to expiry (1 or more).")
-            continue
-        premium = None if prem is None or pd.isna(prem) else float(prem)
-        legs.append(Leg(typ.lower(), q, float(K), float(D), premium))
-    return legs, problems
 
 
 def position_code(legs, market: Market, mult: float, lots: int) -> str:
@@ -150,11 +91,9 @@ with st.sidebar:
     st.number_input("Lots", min_value=1, step=1, key="lots",
                     help="How many units of the strategy you trade. Every leg's quantity is multiplied by this.")
 
-skew, smile = SMILES[ss.smile_shape] or (ss.skew / 100.0, ss.smile / 100.0)
-vol = VolModel(atm=ss.atm / 100.0, skew=skew, smile=smile)
-market = Market(spot=float(ss.spot), rate=ss.rate / 100.0, div_yield=ss.div / 100.0, vol=vol,
-                sticky="strike" if ss.sticky == "Sticky strike" else "moneyness")
-mult = float(MULTIPLIERS[ss.mult_choice] or ss.mult_custom)
+market = current_market()
+vol = market.vol
+mult = current_multiplier()
 lots = int(ss.lots)
 
 # ---------------------------------------------------------------- strategy + legs

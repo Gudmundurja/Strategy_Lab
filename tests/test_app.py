@@ -71,3 +71,64 @@ def test_structuring_assistant_replaces_the_structure(lab):
     assert not lab.exception
     assert metric(lab, "KIRB") == before                        # same pool...
     assert metric(lab, "RWA after") != "610.6m"                 # ...but a different structure
+
+
+def _apptest_reruns_segmented_controls() -> bool:
+    """Older Streamlit releases' AppTest cannot rerun a page that has a segmented control (the app itself works)."""
+    try:
+        at = AppTest.from_string("import streamlit as st\nst.segmented_control('x', ['A', 'B'], key='k')\n").run()
+        at.run()
+        return not at.exception
+    except Exception:
+        return False
+
+
+needs_button_groups = pytest.mark.skipif(not _apptest_reruns_segmented_controls(),
+                                         reason="this Streamlit version's AppTest cannot rerun segmented controls")
+MC_SECTIONS = ["Exotics", "Variance reduction", "Greeks", "American", "Multi-asset", "Your position", "VaR & ES"]
+MC_MODELS = ["Black-Scholes (GBM)", "Heston stochastic vol", "Merton jump-diffusion"]
+
+
+@pytest.fixture
+def mc(lab):
+    lab.switch_page("views/montecarlo_lab.py").run()
+    assert not lab.exception
+    lab.session_state["mc_paths"] = 5_000          # fewer paths keeps the test fast
+    lab.run()
+    return lab
+
+
+@needs_button_groups
+def test_monte_carlo_page_renders_every_section_under_every_model(mc):
+    for model in MC_MODELS:
+        mc.selectbox(key="mc_model").set_value(model).run()
+        for sec in MC_SECTIONS:
+            mc.session_state["mc_section"] = sec
+            mc.run()
+            assert not mc.exception, (model, sec)
+
+
+@needs_button_groups
+def test_monte_carlo_products_and_options(mc):
+    for method in ["Plain", "Control variate", "Sobol + control variate"]:
+        mc.selectbox(key="mc_method").set_value(method).run()
+        for product in ["European", "Digital (cash-or-nothing)", "Asian, geometric average", "Barrier",
+                        "Lookback, floating strike", "Lookback, fixed strike"]:
+            mc.selectbox(key="ex_product").set_value(product).run()
+            assert not mc.exception, (method, product)
+    assert metric(mc, "Formula") == "none"                       # no closed form for a fixed-strike lookback
+    mc.selectbox(key="ex_product").set_value("Barrier").run()
+    mc.selectbox(key="ex_dir").set_value("up").run()
+    mc.number_input(key="ex_barrier").set_value(120.0).run()
+    mc.selectbox(key="ex_knock").set_value("in").run()
+    assert not mc.exception and metric(mc, "Formula") != "none"
+    mc.session_state["mc_section"] = "Multi-asset"
+    mc.run()
+    mc.radio(key="ma_n").set_value(3).run()
+    for product in ["Basket", "Best-of", "Worst-of"]:
+        mc.selectbox(key="ma_product").set_value(product).run()
+        assert not mc.exception, product
+    mc.session_state["mc_section"] = "American"
+    mc.run()
+    mc.selectbox(key="am_kind").set_value("call").run()
+    assert not mc.exception

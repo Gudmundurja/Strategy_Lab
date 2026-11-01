@@ -64,3 +64,21 @@ r = capital.srt_economics(capital.SRTInputs(), preset("Bank SRT (synthetic)"))
 print(f"   K {pct(r['k'], 2)} | KIRB {pct(r['kirb'], 2)} | RWA {compact(r['rwa_before'])} -> {compact(r['rwa_after'])}")
 print(f"   capital released {compact(r['capital_released'])} for {compact(r['annual_cost'])} a year: "
       f"cost of relief {pct(r['cost_of_relief'])} ({'economic' if r['economic'] else 'not economic'} at a 12% cost of equity)")
+
+print("\n9. Monte Carlo: an arithmetic Asian call under Heston stochastic volatility")
+from derivlab.montecarlo import GBM, Heston, american, compare_methods, price_option  # noqa: E402
+from derivlab.montecarlo.payoffs import Asian  # noqa: E402
+from derivlab.pricing import binomial_price  # noqa: E402
+
+res = price_option(Asian("call", 100), Heston(), S0=100, r=0.04, q=0.0, T=0.5, n_obs=126, n_paths=50_000,
+                   sampling="sobol", control="auto")
+print(f"   price {res.price:.4f} ± {1.96 * res.stderr:.4f} (95%) from {res.n_paths:,} paths, control: {res.control}")
+
+print("\n10. The same option under GBM with every variance-reduction method (same path budget)")
+table = compare_methods(Asian("call", 100), GBM(0.25), 100, 0.04, 0.0, 0.5, 126, 20_000)
+print(table[["Method", "Price", "Std error", "Variance reduction"]].round(5).to_string(index=False))
+
+print("\n11. An American put: Longstaff-Schwartz against a 1,000-step binomial tree")
+lsm = american.lsm_price("put", 100, 100, 1.0, 0.05, 0.0, GBM(0.2), n_ex=50, n_paths=50_000)
+print(f"   LSM {lsm['price']:.4f} ± {1.96 * lsm['stderr']:.4f}, tree {binomial_price('put', 100, 100, 1.0, 0.05, 0.0, 0.2, 1000):.4f}, "
+      f"European {lsm['european']:.4f}")

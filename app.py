@@ -1,4 +1,4 @@
-"""Strategy Lab: an options strategy lab and a credit structuring lab.
+"""Strategy Lab: an options strategy lab, a Monte Carlo pricer and a credit structuring lab.
 
 Run with:  streamlit run app.py
 """
@@ -17,8 +17,9 @@ PERSIST = [
     "wf_bal", "wf_wac", "wf_term", "wf_amort", "wf_cpr", "wf_cdr", "wf_sev", "wf_lag", "wf_fee",
     "srt_ead", "srt_pd", "srt_lgd", "srt_m", "srt_ac", "srt_n", "srt_mt", "srt_sts", "srt_cap", "srt_coe",
 ]
-for _k in PERSIST:
-    if _k in st.session_state:
+PERSIST_PREFIXES = ("mc_", "ex_", "am_", "ma_", "rk_")      # Monte Carlo page inputs
+for _k in list(st.session_state.keys()):
+    if _k in PERSIST or (isinstance(_k, str) and _k.startswith(PERSIST_PREFIXES)):
         st.session_state[_k] = st.session_state[_k]
 
 # Slightly smaller metric values so long numbers ("Unlimited", two breakevens) fit their columns.
@@ -26,6 +27,7 @@ st.markdown("<style>[data-testid='stMetricValue'] {font-size: 1.7rem;}</style>",
 
 pages = [
     st.Page("views/strategy_lab.py", title="Options strategy lab", icon=":material/show_chart:", default=True),
+    st.Page("views/montecarlo_lab.py", title="Monte Carlo pricer", icon=":material/casino:"),
     st.Page("views/credit_lab.py", title="Credit structuring", icon=":material/layers:"),
 ]
 st.navigation(pages).run()
