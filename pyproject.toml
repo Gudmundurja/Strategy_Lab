@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "derivlab"
+version = "1.0.0"
+description = "An options strategy lab and a credit structuring toolkit: Black-Scholes with a volatility smile, scenario grids, position sizing, Gaussian-copula tranche pricing, cash-flow waterfalls and SEC-IRBA capital."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "scipy>=1.11", "pandas>=2.1", "plotly>=5.20"]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.50"]
+dev = ["streamlit>=1.50", "pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+include = ["derivlab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
