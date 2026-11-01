@@ -1,0 +1,1055 @@
+% !TEX program = xelatex
+% Strategy Lab | Quantitative Options & Credit Structuring
+% Upload this directory to Overleaf and select XeLaTeX as compiler.
+\documentclass[10pt,a4paper]{article}
+
+% ---- Typography, page geometry and navigation ----
+\usepackage{fontspec}
+\IfFontExistsTF{Noto Serif}{\setmainfont{Noto Serif}}{\setmainfont{Latin Modern Roman}}
+\IfFontExistsTF{Inter}{\setsansfont{Inter}}{\setsansfont{Latin Modern Sans}}
+\IfFontExistsTF{DejaVu Sans Mono}{\setmonofont[Scale=0.88]{DejaVu Sans Mono}}{\setmonofont[Scale=0.88]{Latin Modern Mono}}
+\usepackage{newpxmath}
+\usepackage[a4paper,top=26mm,bottom=27mm,left=25mm,right=25mm,headheight=20pt]{geometry}
+\usepackage{microtype}
+\usepackage{newunicodechar}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{⌊}{\ensuremath{\lfloor}}
+\newunicodechar{⌋}{\ensuremath{\rfloor}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\usepackage{xcolor}
+\definecolor{Ink}{HTML}{17263A}
+\definecolor{Navy}{HTML}{0E2741}
+\definecolor{Accent}{HTML}{157C90}
+\definecolor{Muted}{HTML}{64758A}
+\definecolor{Rule}{HTML}{D9E2E9}
+\definecolor{Pale}{HTML}{F4F8FA}
+\definecolor{Warm}{HTML}{FBFCFD}
+\color{Ink}
+\usepackage{graphicx}
+\usepackage{array,booktabs,longtable,calc}
+\usepackage{amsmath,mathtools}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usepackage[unicode=true,pdfencoding=auto,psdextra,colorlinks=true,linkcolor=Navy,urlcolor=Accent,citecolor=Accent,
+ pdftitle={Strategy Lab | Quantitative Options and Credit Structuring},
+ pdfauthor={Gudmundur J. Armannsson},
+ pdfsubject={Technical methodology and model documentation}]{hyperref}
+\urlstyle{same}
+\hypersetup{bookmarksnumbered=true,bookmarksopen=false}
+
+\renewcommand{\baselinestretch}{1.095}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt minus 1pt}
+\setlength{\emergencystretch}{2em}
+\sloppy
+\setlist[itemize]{leftmargin=1.4em,topsep=3pt,itemsep=2pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.5em,topsep=3pt,itemsep=2pt,parsep=0pt}
+\providecommand{\tightlist}{\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}}
+\providecommand{\real}[1]{#1}
+\renewcommand{\arraystretch}{1.23}
+\setlength{\tabcolsep}{5.5pt}
+\AtBeginEnvironment{longtable}{\small\color{Ink}}
+\AtBeginEnvironment{align}{\small}
+\AtBeginEnvironment{equation}{\small}
+\allowdisplaybreaks[1]
+\numberwithin{equation}{section}
+
+% ---- Section hierarchy ----
+\titleformat{\section}[block]{\sffamily\Large\bfseries\color{Navy}}{\textcolor{Accent}{\thesection}\hspace{11pt}}{0pt}{}[\vspace{1.5pt}\titlerule]
+\titlespacing*{\section}{0pt}{22pt}{10pt}
+\titleformat{\subsection}[block]{\sffamily\normalsize\bfseries\color{Navy}}{\textcolor{Accent}{\thesubsection}}{9pt}{}
+\titlespacing*{\subsection}{0pt}{14pt}{5pt}
+\titleformat{\subsubsection}[block]{\sffamily\normalsize\bfseries\color{Navy}}{}{0pt}{}
+\setcounter{tocdepth}{1}
+\titlecontents{section}[2em]{\sffamily\small\vspace{2pt}}{\contentslabel{2em}}{}{\titlerule*[0.7pc]{.}\contentspage}
+\titlecontents{part}[0pt]{\sffamily\footnotesize\bfseries\color{Accent}\vspace{7pt}}{}{}{\hfill}
+
+% ---- Header and footer ----
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\footnotesize\bfseries\textcolor{Navy}{STRATEGY LAB}}
+\fancyhead[R]{\sffamily\scriptsize\textcolor{Muted}{TECHNICAL METHODOLOGY}}
+\fancyfoot[L]{\sffamily\scriptsize\textcolor{Muted}{Research prototype | Not for trading or regulatory use}}
+\fancyfoot[R]{\sffamily\scriptsize\textcolor{Muted}{\thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{Rule}\leaders\hrule height \headrulewidth\hfill}}
+
+% ---- In-document design elements ----
+\newcommand{\PartMarker}[2]{%
+\clearpage
+\phantomsection\addcontentsline{toc}{part}{#2}%
+\vspace*{1mm}%
+\noindent\begin{minipage}[t]{0.10\textwidth}
+{\sffamily\Large\bfseries\color{Accent}#1}
+\end{minipage}%
+\begin{minipage}[t]{0.88\textwidth}
+{\sffamily\small\bfseries\color{Muted}\MakeUppercase{#2}}\\[4pt]
+\textcolor{Rule}{\rule{\linewidth}{0.8pt}}
+\end{minipage}
+\vspace{2mm}}
+\lstdefinestyle{architecture}{
+ basicstyle=\ttfamily\footnotesize\color{Ink},
+ backgroundcolor=\color{Pale},
+ frame=single,rulecolor=\color{Rule},
+ numbers=none,showstringspaces=false,
+ breaklines=true,breakatwhitespace=true,
+ xleftmargin=8pt,xrightmargin=5pt,framexleftmargin=7pt,framexrightmargin=5pt,
+ aboveskip=9pt,belowskip=9pt,
+ columns=fullflexible,keepspaces=true
+}
+\newtcolorbox{overviewbox}[1]{enhanced,sharp corners,colback=Pale,colframe=Rule,boxrule=.5pt,
+ left=13pt,right=13pt,top=11pt,bottom=11pt,
+ fonttitle=\sffamily\bfseries\color{Navy},title={#1},coltitle=Navy,
+ colbacktitle=Pale,attach boxed title to top left={xshift=7pt,yshift=-4pt},boxed title style={frame empty,interior empty}}
+
+\begin{document}
+% -------------------------------------------------- COVER
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[Navy] (current page.north west) rectangle ([xshift=13mm]current page.south west);
+  \fill[Accent] ([xshift=13mm]current page.north west) rectangle ([xshift=17mm]current page.south west);
+  \draw[Rule,line width=0.6pt] ([xshift=31mm,yshift=-36mm]current page.north west) -- ([xshift=-23mm,yshift=-36mm]current page.north east);
+\end{tikzpicture}
+\vspace*{39mm}
+\hspace*{22mm}\begin{minipage}{0.78\textwidth}
+{\sffamily\small\bfseries\color{Accent} QUANTITATIVE FINANCE \quad / \quad RESEARCH DOCUMENTATION}\par
+\vspace{24mm}
+{\sffamily\fontsize{38}{44}\selectfont\bfseries\color{Navy} Strategy Lab}\par
+\vspace{9mm}
+{\sffamily\fontsize{17}{23}\selectfont\color{Navy} Quantitative Options \&\\ Credit Structuring}\par
+\vspace{13mm}
+\textcolor{Accent}{\rule{31mm}{2.3pt}}\par
+\vspace{13mm}
+{\sffamily\normalsize\color{Muted} TECHNICAL METHODOLOGY \& MODEL DOCUMENTATION}\par
+\vspace{10mm}
+{\large\color{Ink}Pricing and risk sensitivities, volatility modelling,\\ tranche analytics, cash-flow waterfalls and\\ synthetic risk-transfer economics.}\par
+\end{minipage}
+\vfill
+\hspace*{22mm}\begin{minipage}{0.78\textwidth}
+\textcolor{Rule}{\rule{\linewidth}{0.6pt}}\par
+\vspace{5mm}
+\begin{tabular}{@{}p{0.54\linewidth}p{0.38\linewidth}@{}}
+{\sffamily\footnotesize\color{Muted} PREPARED BY} & {\sffamily\footnotesize\color{Muted} ISSUED}\\[2mm]
+{\sffamily\bfseries\color{Navy} Gudmundur J. Armannsson} & {\sffamily\bfseries\color{Navy} November 2026}\\
+\end{tabular}
+\vspace{13mm}
+{\sffamily\scriptsize\color{Muted} Methodology note | Research and educational prototype | Not investment advice}\par
+\end{minipage}
+\vspace*{17mm}
+\end{titlepage}
+
+% -------------------------------------------------- OVERVIEW
+\pagenumbering{roman}
+\section*{Executive overview}
+\addcontentsline{toc}{section}{Executive overview}
+\vspace{1mm}
+Strategy Lab is a modular quantitative research environment for analysing multi-leg option positions and tranched credit structures. Its design emphasis is transparency: explicit model assumptions, interpretable outputs and independently testable analytics, rather than institutional-scale model complexity.
+
+The report documents the analytical methods, numerical conventions, implementation decisions and principal limitations. It is intended for readers familiar with derivatives, structured credit, portfolio risk and the economics of capital relief.
+\par\vspace{5mm}
+\noindent\begin{minipage}[t]{0.49\textwidth}
+\begin{overviewbox}{01 \quad OPTIONS ANALYTICS}
+\small European option valuation and Greeks; a parametric implied-volatility surface; multi-leg payoff and scenario analysis; risk-budget sizing and delta hedging; 34 documented strategy presets.
+\end{overviewbox}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\begin{overviewbox}{02 \quad CREDIT STRUCTURING}
+\small Tranche attachment and detachment design; one-factor Gaussian copula and Vasicek losses; expected-loss spreads; monthly priority-of-payments waterfalls; illustrative SEC-IRBA and SRT capital screens.
+\end{overviewbox}
+\end{minipage}
+\par\vspace{8mm}
+{\sffamily\bfseries\color{Navy} Analytic framework}\par
+\vspace{2mm}
+\begin{tabular}{@{}p{.23\linewidth}p{.70\linewidth}@{}}
+\textcolor{Accent}{\sffamily\bfseries Model design} & Parametric, closed-form or explicitly simulated methods, with stated assumptions and calculation conventions.\\[2mm]
+\textcolor{Accent}{\sffamily\bfseries Implementation} & A reusable Python analytics library separated from a Streamlit presentation layer.\\[2mm]
+\textcolor{Accent}{\sffamily\bfseries Verification} & A documented 209-test pytest suite, selected analytical benchmarks, invariant checks and interface review.\\[2mm]
+\textcolor{Accent}{\sffamily\bfseries Intended use} & Education, model exploration and preliminary scenario analysis only.\\
+\end{tabular}
+\vspace{8mm}
+\begin{tcolorbox}[enhanced,sharp corners,colback=Warm,colframe=Rule,boxrule=.6pt,
+ borderline west={2pt}{0pt}{Accent},left=11pt,right=11pt,top=7pt,bottom=8pt]
+{\sffamily\bfseries\color{Navy} Model-use boundary}\par
+\small The framework is not calibrated or validated for live execution, transaction pricing, production risk management or regulatory reporting. In particular, the options models do not capture all smile dynamics or market frictions, and credit and regulatory calculations abstract from material transaction-specific terms, supervisory conditions and modelling uncertainties.
+\end{tcolorbox}
+\clearpage
+
+% -------------------------------------------------- CONTENTS
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+\PartMarker{01}{Framework and conventions}
+
+\section{Purpose and scope}\label{purpose-and-scope}
+
+The Strategy Lab is a learning and first-pass analysis tool with two halves:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Options strategy lab.} Build a multi-leg option position, then see its payoff, Greeks, a spot × volatility scenario grid, the effect of a volatility smile, and how to size and hedge it.
+\item
+  \textbf{Credit structuring lab.} Design a tranched capital structure on a loan pool, then test it three ways: tranche risk and pricing in a one-factor Gaussian copula, cash flows in a monthly waterfall, and the regulatory capital a bank frees up through a synthetic risk transfer (SRT).
+\end{itemize}
+
+The guiding principle is \textbf{transparency over sophistication}. The principal models have explicit, auditable mathematical definitions: Black-Scholes, a quadratic smile, the Vasicek loss distribution, a sequential waterfall, the Basel formulas. Where a richer model is standard in practice (local or stochastic volatility, base correlation, full deal waterfalls), this document says so in Section 16 (Limitations).
+
+\textbf{Important qualification.} Strategy Lab is a research and educational prototype, not an execution platform, independently validated pricing engine, production risk-management system or regulatory reporting solution. Outputs are not investment advice.
+
+\section{Architecture}\label{architecture}
+
+The application separates the analytical library from presentation and interaction layers.
+
+\begin{lstlisting}[style=architecture]
+app.py                   Streamlit entry point; navigation and session state
+views/
+  strategy_lab.py        Options interface
+  credit_lab.py          Credit-structuring interface
+derivlab/                 Financial analytics library (independent of UI)
+  pricing.py             BSM pricing, Greeks, implied vol, binomial tree
+  volatility.py          Parametric implied-volatility model
+  position.py            Leg, Market, Position and Analysis
+  presets.py             34 pre-defined option strategies
+  sizing.py              Position sizing, delta hedge and exposure
+  charts.py              Reusable Plotly figures
+  fmt.py                 Numeric formatting
+  credit/
+    structures.py        Tranches, capital structures and templates
+    copula.py            Gaussian copula, simulation and fair spreads
+    design.py            Structure design and tranche reporting
+    waterfall.py         Cash-flow allocation and stress testing
+    capital.py           IRB, SEC-IRBA and SRT economics
+tests/                   Pytest and headless UI checks
+\end{lstlisting}
+
+\textbf{Design rationale}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Library first, UI second.} All finance lives in \texttt{derivlab}; the \texttt{views/} files only collect inputs and display results. This keeps the models testable without a browser, reusable in notebooks, and lets the ``Legs \& Python'' tab print a position as library code.
+\item
+  \textbf{NumPy vectorisation.} Pricing functions accept scalars or arrays, so a payoff curve over 6,000 spot levels is one call rather than a Python loop. The full analysis of a position takes a few milliseconds, which is why the options page needs no caching.
+\item
+  \textbf{Plain dataclasses.} \texttt{Leg}, \texttt{Market}, \texttt{VolModel}, \texttt{Tranche}, \texttt{PoolAssumptions}, \texttt{SRTInputs} are small dataclasses with validation in \texttt{\_\_post\_init\_\_} or the constructor. \texttt{VolModel} is frozen (immutable), so a ``shifted'' smile is a new object and scenarios never mutate the base market.
+\item
+  \textbf{Plotly figures as the chart interface.} Every function in \texttt{charts.py} returns a \texttt{plotly.graph\_objects.Figure}, so the same charts work in Streamlit, Jupyter and static HTML.
+\item
+  \textbf{Dependencies kept to the scientific stack}: NumPy, SciPy, pandas, Plotly, Streamlit, pytest.
+\end{itemize}
+
+\section{Conventions and units}\label{conventions-and-units}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1503}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8497}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Quantity}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Convention}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Time & Calendar days, 365-day year (\texttt{DAYS\_PER\_YEAR\ =\ 365}). \texttt{T} in formulas is in years. \\
+Rates & Continuously compounded risk-free rate \texttt{r} and continuous yield \texttt{q} (dividend yield; the foreign rate for FX; a convenience yield for commodities). \\
+Volatility & Annualised, as a decimal inside the library (0.25 = 25\%), in percent in the UI. \\
+Quantities & Signed: positive = long (buy), negative = short (sell). Measured in \textbf{contracts per lot}. \\
+Multiplier & Units of underlying per contract (100 for US equity options). Applies to underlying legs too. \\
+Lots & Number of copies of the strategy. \texttt{Position.scaled(lots)} multiplies every quantity. \\
+Money figures & Per-unit price × quantity × multiplier. Everything the UI shows includes multiplier and lots. \\
+Premium sign & \texttt{net\_premium\ \textgreater{}\ 0} is a credit (cash received), \texttt{\textless{}\ 0} a debit (cash paid). \\
+Greeks (library, per unit) & Vega and rho per 1.00 change in vol / rate; theta per year. \\
+Greeks (position, money) & Delta in units of underlying, gamma per 1.00 spot move, theta per calendar day, vega per vol point, rho per 1\% rate move. \\
+Credit fractions & Attachment, detachment, PD, LGD are decimals of pool notional inside the library, percent in the UI. \\
+Spreads & Decimal inside the library, basis points (bp) in reports. 1 bp = 0.01\%. \\
+\end{longtable}
+
+\PartMarker{02}{Options analytics}
+
+\section{Options: pricing}\label{options-pricing}
+
+\subsection{Black-Scholes-Merton}\label{black-scholes-merton}
+
+A European call or put on an asset with spot \texttt{S}, strike \texttt{K}, time to expiry \texttt{T}, rate \texttt{r}, yield \texttt{q} and volatility \texttt{σ}:
+
+\begin{align}
+d_1 &= \frac{\ln(S/K)+(r-q+\tfrac12\sigma^2)T}{\sigma\sqrt{T}}, & d_2 &= d_1-\sigma\sqrt{T},\\
+C &= Se^{-qT}\Phi(d_1)-Ke^{-rT}\Phi(d_2),\\
+P &= Ke^{-rT}\Phi(-d_2)-Se^{-qT}\Phi(-d_1).
+\end{align}
+
+\(\Phi\) is the standard normal CDF (\texttt{scipy.special.ndtr}). Including \texttt{q} makes one formula cover stocks with dividends, indices, FX (Garman-Kohlhagen, with \texttt{q} the foreign rate) and futures (Black-76, with \texttt{q\ =\ r}).
+
+\textbf{Edge cases (decision).} At or after expiry (\texttt{T\ ≤\ 0}) the price is intrinsic value. At zero volatility the price is the discounted intrinsic value of the forward, \texttt{max(S·e\^{}(−qT)\ −\ K·e\^{}(−rT),\ 0)} for a call. Both are the mathematical limits, so P\&L curves stay continuous as an option expires.
+
+\textbf{Put-call parity} holds by construction: \texttt{C\ −\ P\ =\ S·e\^{}(−qT)\ −\ K·e\^{}(−rT)}. It is what makes a synthetic long (long call + short put) behave like the forward, and a conversion lock in the strike.
+
+\subsection{Greeks}\label{greeks}
+
+Closed-form sensitivities per unit of underlying:
+
+\begin{align*}
+\Delta_C &= e^{-qT}\Phi(d_1), & \Delta_P &= -e^{-qT}\Phi(-d_1),\\
+\Gamma_C=\Gamma_P &= \frac{e^{-qT}\phi(d_1)}{S\sigma\sqrt{T}},\\
+\nu_C=\nu_P &= S e^{-qT}\phi(d_1)\sqrt{T},\\
+\Theta_C &= -\frac{S e^{-qT}\phi(d_1)\sigma}{2\sqrt{T}}
+-rK e^{-rT}\Phi(d_2)+qS e^{-qT}\Phi(d_1),\\
+\Theta_P &= -\frac{S e^{-qT}\phi(d_1)\sigma}{2\sqrt{T}}
++rK e^{-rT}\Phi(-d_2)-qS e^{-qT}\Phi(-d_1),\\
+\varrho_C &= KT e^{-rT}\Phi(d_2), &
+\varrho_P &= -KT e^{-rT}\Phi(-d_2).
+\end{align*}
+
+\noindent\textit{Interpretation.} Delta measures local spot sensitivity; gamma is the rate of change of delta; vega measures volatility sensitivity; theta captures the effect of calendar-time passage; and rho measures risk-free-rate sensitivity. Here \(\Phi\) and \(\phi\) denote the standard normal cumulative distribution and density functions.
+
+Position Greeks are summed across legs, multiplied by quantity and multiplier, and rescaled to trader units: theta ÷ 365 (per day), vega ÷ 100 (per vol point), rho ÷ 100 (per 1\%). Two derived numbers are shown:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Cash delta} \(=\Delta S\): the cash notional of the delta-equivalent underlying position.
+\item
+  \textbf{Dollar gamma (1\%)} \(=\Gamma S^2\times0.01\): the change in cash delta associated with a 1\% spot move.
+\end{itemize}
+
+\subsection{Implied volatility}\label{implied-volatility}
+
+\texttt{implied\_vol} inverts Black-Scholes with Brent's method on \texttt{{[}1e-6,\ 10{]}} (0.0001\% to 1,000\% vol). Before solving it checks the no-arbitrage bounds (a call is worth at least \texttt{max(S·e\^{}(−qT)\ −\ K·e\^{}(−rT),\ 0)} and at most \texttt{S·e\^{}(−qT)}); outside them no volatility can produce the price and the function returns \texttt{NaN} instead of a misleading number.
+
+\subsection{Binomial tree}\label{binomial-tree}
+
+\texttt{binomial\_price} is a Cox-Ross-Rubinstein tree: \texttt{u\ =\ e\^{}(σ√Δt)}, \texttt{d\ =\ 1/u}, risk-neutral probability \texttt{p\ =\ (e\^{}((r−q)Δt)\ −\ d)/(u\ −\ d)}, 500 steps by default, with an optional early-exercise check at every node. It is in the library to show the \textbf{early-exercise premium of American puts} and that an American call on a non-dividend-paying stock is not optimally exercised early. The strategy lab itself prices everything as European.
+
+\section{Options: the volatility smile}\label{options-the-volatility-smile}
+
+\subsection{Why a smile}\label{why-a-smile}
+
+Black-Scholes assumes one volatility for every strike. Markets disagree: equity index options show a \textbf{put skew} (low strikes trade at higher implied vol, because crash insurance is in demand and returns have fat left tails), and FX options show a more symmetric \textbf{smile} (both wings above the at-the-money vol). Ignoring this misprices every strategy whose legs are at different strikes.
+
+\subsection{The model}\label{the-model}
+
+\texttt{VolModel} uses a quadratic in \textbf{standardised moneyness}:
+
+\begin{align}
+x &= \frac{\ln(K/F)}{\sigma_{\mathrm{ATM}}\sqrt{T}}, & F &= Se^{(r-q)T},\\
+\sigma(K,T)&=\max\!\left(\sigma_{\mathrm{floor}},\sigma_{\mathrm{ATM}}+
+\mathrm{shift}+\mathrm{skew}\,x+\mathrm{smile}\,x^2\right).
+\end{align}
+
+The standardised moneyness input \(x\) is clipped to \([-4,4]\), and the volatility floor is 1\%.
+
+The forward \(F\) is defined above. Presets: flat; \emph{equity} (\texttt{skew\ =\ −0.035}, \texttt{smile\ =\ 0.006}); \emph{FX} (\texttt{skew\ =\ −0.003}, \texttt{smile\ =\ 0.008}); or custom sliders.
+
+\textbf{Design rationale}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Standardised moneyness rather than strike.} Measuring distance in standard deviations makes one set of parameters produce a sensible smile for every expiry: a 10\%-out-of-the-money strike is far away for a 1-week option and close for a 2-year one. A smile in raw strike would need a parameter set per expiry.
+\item
+  \textbf{A quadratic.} Two parameters with obvious meanings (tilt and curvature) are enough to show what skew does to strategy prices, and they map to how traders quote smiles (risk reversals measure skew, butterflies measure curvature).
+\item
+  \textbf{Flat wings beyond ±4 standard deviations.} A quadratic rises without limit, which gives unrealistically high implied volatility estimates (and possible arbitrage) for far-away strikes. The problem showed up in testing: under a sticky-moneyness equity smile, a calendar spread's maximum profit came out as ``unlimited'', because when spot was pushed to 5× its level the far-in-the-money long call was being priced at a 200\%+ vol.~Holding the smile flat beyond ±4σ fixed this. A test now checks, for all 34 presets, that switching on the smile never changes whether risk is unlimited.
+\item
+  \textbf{\texttt{shift} is a true parallel move.} Scenario vol shifts add the same number of vol points to every strike. An earlier version moved \texttt{σ\_ATM} itself, which also rescales \texttt{x} and changes the shape of the skew; that is not what ``vol up 5 points'' means to a trader.
+\end{itemize}
+
+\subsection{Sticky strike vs sticky moneyness}\label{sticky-strike-vs-sticky-moneyness}
+
+When spot moves, what happens to each option's implied vol?
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Sticky strike.} Each strike keeps its vol.~The forward used for moneyness stays at today's spot.
+\item
+  \textbf{Sticky moneyness} (often called sticky delta). The smile slides with spot, so the vol of a fixed strike changes as spot moves.
+\end{itemize}
+
+The choice changes the \emph{now} curve, the scenario grid and, importantly, \textbf{delta}. Under sticky moneyness the library computes delta and gamma by bumping spot by 0.1\% both ways and repricing with the smile moving (central finite differences), so they include the term \texttt{vega\ ×\ ∂σ/∂S} (the ``smile delta''). With equity skew this raises a call's delta and makes a put's delta less negative compared with sticky strike. The volatility smile tab shows both deltas side by side.
+
+\subsection{Smile effect on cost}\label{smile-effect-on-cost}
+
+The smile tab reprices every leg at the flat ATM vol and compares: \texttt{Σ\ qty\ ×\ (price\ on\ smile\ −\ price\ at\ ATM\ vol)\ ×\ multiplier}. Positive means the smile makes the position more expensive to put on. Example: with put skew a bear put spread is cheaper than Black-Scholes suggests, because the lower strike you sell carries the higher vol.
+
+\section{Options: positions and their analysis}\label{options-positions-and-their-analysis}
+
+\subsection{Legs, market and position}\label{legs-market-and-position}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Leg(kind,\ qty,\ strike,\ days,\ premium=None)}: \texttt{kind} is \texttt{call}, \texttt{put} or \texttt{underlying}. \texttt{premium} overrides the model price with the price you actually traded at, so P\&L reflects your real entry.
+\item
+  \texttt{Market(spot,\ rate,\ div\_yield,\ vol,\ sticky)}.
+\item
+  \texttt{Position(legs,\ market,\ multiplier,\ default\_horizon=30)}.
+\end{itemize}
+
+\textbf{Entry cost} = \texttt{Σ\ qty\ ×\ entry\ price} (model price unless overridden; spot for underlying legs). \textbf{Value} at spot \texttt{S} after \texttt{d} days with vol shift \texttt{Δσ} = \texttt{Σ\ qty\ ×\ Black-Scholes\ value} with time to expiry reduced by \texttt{d}. \textbf{P\&L} = (value − entry cost) × multiplier. With model prices, P\&L at inception is exactly zero (tested).
+
+\subsection{The horizon and multiple expiries}\label{the-horizon-and-multiple-expiries}
+
+Expiry figures are measured at the \textbf{first expiry} (\texttt{horizon} = the shortest days to expiry among option legs; 30 days for a position with no options). Legs that expire later are valued with Black-Scholes at that date, using their remaining time and the smile.
+
+\emph{Rationale:} this is the standard way to read calendar and diagonal spreads (the profit from the short near-dated option decaying while the long back-month option keeps its time value), and it gives every position one well-defined ``expiry'' P\&L curve.
+
+\subsection{Maximum profit, maximum loss and ``unlimited''}\label{maximum-profit-maximum-loss-and-unlimited}
+
+The P\&L at the horizon is evaluated on a grid of 6,000 spot levels from almost zero to \texttt{max(5\ ×\ spot,\ 2\ ×\ highest\ strike)}, \textbf{with every strike inserted exactly}. At expiry a single-expiry payoff is piecewise linear with kinks only at the strikes, so its extremes lie at a strike or in a tail; including the strikes makes those values exact rather than approximate (testing showed a straddle's maximum loss off by about 0.5\% before this).
+
+\begin{itemize}
+\tightlist
+\item
+  Max profit = highest P\&L on the grid, or \textbf{unlimited} if the P\&L is still rising at the top of the grid (slope over the last 60 points \textgreater{} 0.001 × multiplier).
+\item
+  Max loss = lowest P\&L, or \textbf{unlimited} if still falling.
+\item
+  A loss bounded only by the underlying going to zero (short put, long stock) is reported as a number, which is why the strategy notes distinguish ``Large'' from ``Unlimited''.
+\item
+  If the worst case is a gain (box spread, conversion), max loss shows ``None''.
+\end{itemize}
+
+\textbf{Reward : risk} = max profit ÷ \textbar max loss\textbar{} when both are finite.
+
+\subsection{Breakevens}\label{breakevens}
+
+Breakevens are the spot levels where the horizon P\&L changes sign, found between grid points by linear interpolation. Exact zeros on the grid are skipped and handled explicitly (a P\&L that touches zero at a strike then crosses would otherwise be missed), and crossings closer than 0.1\% of spot are merged.
+
+\subsection{Probability of profit}\label{probability-of-profit}
+
+Spot at the horizon is assumed \textbf{lognormal under the risk-neutral measure}:
+
+\begin{equation}
+\ln S_T\sim\mathcal{N}\!\left(\ln S+(r-q-\tfrac12\sigma^2)T,\,\sigma^2T\right)
+\end{equation} where \(\sigma\) is ATM volatility including any parallel shift.
+
+The breakevens split the price axis into intervals of constant P\&L sign. The code checks the sign in the middle of each interval and adds the exact lognormal probability of every profitable interval. The result is exact up to the precision of the breakevens (an earlier grid-sum version was only accurate to about 0.2\%).
+
+\emph{What it is not.} It is the probability under the pricing measure, which drifts at the risk-free rate and uses implied vol.~Real-world odds differ: the real drift is usually higher and implied vol usually exceeds realised vol (the volatility risk premium), which is why short-vol strategies tend to show high probabilities of profit and occasional large losses. Use it to compare strategies, not as a forecast.
+
+\subsection{The spot × vol scenario grid}\label{the-spot-vol-scenario-grid}
+
+\texttt{scenario\_grid(spot\_moves,\ vol\_shifts,\ days\_elapsed)} returns P\&L for every combination of a percentage spot move and a parallel vol shift, valued after \texttt{days\_elapsed} days (0 = an instant shock). This is the classic way risk managers view an option book, because Greeks are local and the grid shows what happens in large moves: gamma and vega interact, and the shape of the payoff dominates.
+
+\subsection{Curves for the payoff chart}\label{curves-for-the-payoff-chart}
+
+The payoff chart shows the expiry P\&L (green above zero, red below) and a dashed ``now'' curve: the position marked to model on a chosen day with a chosen vol shift. The gap between them is the time value still in the options.
+
+\section{Options: sizing and hedging}\label{options-sizing-and-hedging}
+
+\subsection{Lots that fit a loss budget}\label{lots-that-fit-a-loss-budget}
+
+\texttt{size\_for\_budget(one\_lot,\ budget,\ basis)}:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Max loss basis} (default for defined-risk positions): risk per lot = \textbar max loss at the first expiry\textbar.
+\item
+  \textbf{Stress basis} (automatically used when max loss is unlimited): risk per lot = the worst P\&L over spot moves within ±range (default ±20\%) combined with vol shifts of −5, 0 and +10 points, checked both as an instant shock and at the first expiry.
+\item
+  Lots = ⌊budget ÷ risk per lot⌋. If the position cannot lose in the scenario (a box spread), there is no limit.
+\end{itemize}
+
+\emph{Rationale:} sizing by maximum loss is how defined-risk option trades are usually sized. For unlimited-risk trades a maximum loss does not exist, so a stress loss is the specified alternative; the vol shocks are asymmetric (+10 / −5) because vol tends to jump up in sell-offs.
+
+\subsection{Delta hedge}\label{delta-hedge}
+
+\texttt{delta\_hedge(position,\ hedge\_multiplier)} returns the trade that makes the position delta-neutral: \texttt{−delta} units of the underlying, or \texttt{−delta\ ÷\ hedge\_multiplier} contracts of a hedge instrument (for example 50 for E-mini S\&P 500 futures). Delta-neutral only holds for small moves at that moment: gamma changes delta as spot moves and time passes, so a hedged option book must be rebalanced.
+
+\subsection{Exposure}\label{exposure}
+
+Option contracts, units of underlying controlled (contracts × multiplier, summed over legs), the notional (units × spot) and the delta-equivalent position.
+
+\section{Options: the strategy library}\label{options-the-strategy-library}
+
+34 presets in six categories: bullish, bearish, neutral, volatility, income \& hedging, time \& arbitrage. Each has when-to-use, how-to-build, when-to-avoid and a tip, a volatility view, cost and risk labels, and the sign of delta, gamma, theta and vega at inception.
+
+Legs are written as offsets in percent of spot (\texttt{("c",\ -1,\ 5)} = sell one call 5\% above spot) and an expiry multiple (calendar and diagonal spreads use 1× and 3× the chosen days). Strikes are rounded to realistic listed increments: 0.1 below a spot of 20, 0.5 up to 100, 1 up to 400, 5 up to 1,000 and 25 above.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1060}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8940}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Category}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Strategies}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Bullish & long call, short put, long future, bull call spread, bull put spread, risk reversal, call ratio spread, call backspread, synthetic long \\
+Bearish & long put, short call, bear put spread, bear call spread, put ratio spread, put backspread, synthetic short \\
+Neutral & long butterfly, broken-wing butterfly, iron condor, iron butterfly, jade lizard \\
+Volatility & long and short straddle, long and short strangle \\
+Income \& hedging & covered call, protective put, collar, put-spread collar, seagull \\
+Time \& arbitrage & calendar spread, diagonal spread, box spread, conversion \\
+\end{longtable}
+
+\textbf{The Greek-sign notes are tested.} A test computes the Black-Scholes Greeks of every preset (spot at the money, 30 days, 25\% vol, 4\% rates) and checks each \texttt{+}, \texttt{−} and \texttt{0} note. \texttt{±} marks Greeks whose sign depends on the strikes. Writing this test found wrong notes on the ratio spreads and backspreads: with the second strike 10\% away, a 1×2 ratio spread is actually \emph{long} gamma at inception, because the at-the-money option has more gamma than two options 10\% out of the money. These presets now use 5\% spacing, where the notes hold (short gamma for ratio spreads, long gamma for backspreads, roughly delta-neutral for both).
+
+Selected concepts:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Box spread} (bull call spread + bear put spread, same strikes) pays \texttt{K2\ −\ K1} in every scenario, so its price is \texttt{(K2\ −\ K1)·e\^{}(−rT)}: it is lending at the risk-free rate. P\&L is the same at every spot (tested).
+\item
+  \textbf{Conversion} (long stock + long put + short call, same strike) locks in \texttt{K} at expiry; its value is \texttt{K·e\^{}(−rT)}. If calls are rich relative to put-call parity, it earns more than the risk-free rate.
+\item
+  \textbf{Jade lizard}: a short put plus a short call spread, sold for a credit at least the call spread's width, so there is no upside risk.
+\item
+  \textbf{Straddle price ≈ 0.8 × σ × √T × S}: the market's expected absolute move, since \texttt{√(2/π)\ ≈\ 0.8}.
+\end{itemize}
+
+\PartMarker{03}{Credit structuring}
+
+\section{Credit: capital structures}\label{credit-capital-structures}
+
+A securitisation or tranched credit product splits the losses of a loan pool into slices. A tranche with \textbf{attachment} \texttt{A} and \textbf{detachment} \texttt{D} (fractions of pool notional) loses
+
+\begin{equation}
+\ell_{[A,D]}(L)=\frac{\min(L,D)-\min(L,A)}{D-A},\qquad 0\le A < D\le 1.
+\end{equation}
+
+where \texttt{L} is the pool loss. Tranches below it are its \textbf{subordination} (credit enhancement); the one at the bottom, attaching at 0\%, is the \textbf{equity} or \textbf{first loss}; the one at the top is the \textbf{senior}.
+
+\texttt{CapitalStructure} sorts tranches and validates the stack, with plain-English errors: the first must attach at 0\%, the last must detach at 100\%, no gaps or overlaps, detachment above attachment, everything between 0\% and 100\%, and unique names (the waterfall and reports look tranches up by name).
+
+Each tranche also carries a \textbf{coupon} (the note coupon in the waterfall, or the annual protection premium on sold tranches in the SRT calculator) and a \textbf{holder} (\texttt{Retained} or \texttt{Sold}, used by the SRT calculator).
+
+\textbf{Templates} (illustrative; coupons are indicative, not market quotes): CDX IG and iTraxx Main standard tranches (0-3-7-15-100\% and 0-3-6-12-100\%), a bank SRT (retained 0-1\% first loss, sold 1-8.5\% mezzanine with a 10\% premium, retained senior), an auto ABS (equity, classes C, B, A) and a CLO (equity, classes E to A).
+
+\section{Credit: the Gaussian copula and tranche risk}\label{credit-the-gaussian-copula-and-tranche-risk}
+
+\subsection{The one-factor model}\label{the-one-factor-model}
+
+Each borrower \texttt{i} defaults over the horizon when its ``asset value''
+
+\begin{equation}
+X_i=\sqrt{\rho}\,M+\sqrt{1-\rho}\,\varepsilon_i,\qquad
+\text{default if }X_i<c=\Phi^{-1}(\mathrm{PD}).
+\end{equation}
+
+\texttt{M} is a common factor (the economy) and \texttt{ε\_i} is idiosyncratic noise, both standard normal. \texttt{ρ} is the \textbf{asset correlation}. Conditional on the factor, defaults are independent with probability
+
+\begin{equation}
+p(M)=\Phi\left(\frac{c-\sqrt{\rho}\,M}{\sqrt{1-\rho}}\right).
+\end{equation}
+
+This is the \textbf{one-factor Gaussian copula} (Li, 2000) and the same model as the Basel IRB formula (Vasicek; Gordy, 2003).
+
+\subsection{Large-pool (Vasicek) distribution}\label{large-pool-vasicek-distribution}
+
+With infinitely many small loans of equal size, the law of large numbers makes the pool loss fraction exactly \texttt{L\ =\ LGD\ ×\ p(M)}. Inverting gives closed forms:
+
+\begin{align}
+F_L(x)&=\Phi\!\left(\frac{\sqrt{1-\rho}\,\Phi^{-1}(x/\mathrm{LGD})-c}{\sqrt{\rho}}\right),\\
+f_L(x)&=\frac{1}{\mathrm{LGD}}\sqrt{\frac{1-\rho}{\rho}}
+\exp\!\left(-\frac{z^2}{2}+\frac{y^2}{2}\right),\\
+y&=\Phi^{-1}(x/\mathrm{LGD}),\quad z=\frac{\sqrt{1-\rho}\,y-c}{\sqrt{\rho}},\\
+Q_L(\alpha)&=\mathrm{LGD}\,\Phi\!\left(\frac{c+\sqrt{\rho}\,\Phi^{-1}(\alpha)}{\sqrt{1-\rho}}\right).
+\end{align} The 99.9\% quantile is the high-confidence portfolio loss benchmark used in Basel IRB capital calculations; the app shows the 1-in-100 and 1-in-1,000 losses.
+
+\subsection{Tranche expected loss (exact)}\label{tranche-expected-loss-exact}
+
+Since tranche loss = \texttt{min(L,\ D)\ −\ min(L,\ A)}, tranche expected loss needs \texttt{E{[}min(L,\ k){]}}. \texttt{L\ ≤\ k} exactly when the factor is above \texttt{m*\ =\ (c\ −\ √(1−ρ)·N⁻¹(k/LGD))\ /\ √ρ}, so
+
+\begin{align}
+\mathbb{E}[\min(L,k)] &= k\Phi(m^*)+\mathrm{LGD}
+\int_{m^*}^{\infty}p(m)\phi(m)\,\mathrm{d}m,\\
+\mathrm{EL}_{[A,D]}&=\frac{\mathbb{E}[\min(L,D)]-\mathbb{E}[\min(L,A)]}{D-A}.
+\end{align}
+
+The remaining integrand is smooth, so composite Gauss-Legendre quadrature (8 × 32 nodes) gives approximately 12 digits of numerical precision in roughly 0.1 ms.
+
+\emph{Rationale:} the first version integrated \texttt{P(L\ \textgreater{}\ x)} over \texttt{{[}A,\ D{]}} with Simpson's rule, which was accurate to about 3 × 10⁻⁶ relative. Moving the integral to the factor, where the kink sits at a known point, made it exact for practical purposes and faster. A test checks that tranche expected losses, weighted by thickness, add back up to the pool's \texttt{PD\ ×\ LGD}.
+
+\subsection{Other tranche metrics}\label{other-tranche-metrics}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{P(loss)} (hit probability) = \texttt{P(L\ \textgreater{}\ A)}.
+\item
+  \textbf{P(wipeout)} = \texttt{P(L\ ≥\ D)}.
+\item
+  \textbf{Loss if hit} = expected loss ÷ P(loss): how bad it is when it happens. Thin tranches lose a lot when hit.
+\end{itemize}
+
+\subsection{Horizon default probability}\label{horizon-default-probability}
+
+The UI asks for an annual PD and a maturity and uses a flat hazard rate: cumulative PD over \texttt{t} years = \texttt{1\ −\ (1\ −\ PD)\^{}t}. Tranche probabilities and expected losses are over the whole life.
+
+\subsection{The correlation trade}\label{the-correlation-trade}
+
+Correlation does not change the pool's expected loss (\texttt{PD\ ×\ LGD}), but it redistributes it. Low correlation concentrates losses around the mean, so the equity is almost certainly hit and senior tranches are safe. High correlation fattens both tails (many scenarios with almost no defaults, and some with many), so \textbf{equity expected loss falls and senior expected loss rises}. The ``EL vs correlation'' chart shows this, and it is the mechanism behind the 2005 correlation crisis and the mispricing of senior CDO tranches before 2008.
+
+\subsection{Fair spread}\label{fair-spread}
+
+The running spread \texttt{s} that makes a tranche's protection leg equal its premium leg, with quarterly payments over the maturity and a flat discount rate \texttt{r}:
+
+\begin{align}
+\mathrm{PV}_{\mathrm{prot}}&=\sum_i\mathrm{DF}(t_i-\tau/2)
+\left[\mathrm{EL}(t_i)-\mathrm{EL}(t_{i-1})\right],\\
+\mathrm{RPV01}&=\sum_i\tau\,\mathrm{DF}(t_i)
+\left[1-\tfrac12\left(\mathrm{EL}(t_i)+\mathrm{EL}(t_{i-1})\right)\right],\\
+s_{\mathrm{fair}}&=\frac{\mathrm{PV}_{\mathrm{prot}}}{\mathrm{RPV01}}.
+\end{align}
+
+\texttt{EL(t)} is the tranche's expected loss up to time \texttt{t}, computed from the cumulative PD at \texttt{t}. As a sanity check, for the whole pool (0-100\%) the fair spread satisfies the \textbf{credit triangle}, spread ≈ hazard rate × LGD (tested to within 3\%).
+
+The report shows the fair spread next to the tranche's coupon. \textbf{Excess} = coupon − fair spread is what investors earn above the modelled expected loss: compensation for unexpected loss, liquidity and model risk. Real SRT mezzanine premiums sit far above model fair spreads for this reason.
+
+\subsection{Finite pools by Monte Carlo}\label{finite-pools-by-monte-carlo}
+
+Real pools have tens to hundreds of loans, sometimes of very different sizes. \texttt{simulate\_losses}:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Equal sizes:} draw the factor, then the number of defaults from a Binomial(N, p(M)). This is exact and very fast.
+\item
+  \textbf{Unequal sizes:} draw each loan's \texttt{X\_i} directly and sum the defaulted exposure weights, in chunks to limit memory. The UI uses lognormal sizes (σ = 1, fixed seed) when ``Unequal loan sizes'' is on.
+\end{itemize}
+
+A small or lumpy pool has a fatter tail than the large-pool formula suggests (a single default is a visible jump), which matters most for thin mezzanine tranches. With 5,000 equal loans the simulation matches the closed form (tested). Seeds are fixed so results are reproducible between reruns.
+
+\section{Credit: the structuring assistant}\label{credit-the-structuring-assistant}
+
+How much subordination does a tranche need? In this model, a tranche attaching at the \texttt{(1\ −\ p)} quantile of the pool loss distribution takes a loss with probability exactly \texttt{p}. \texttt{size\_by\_loss\_probability} uses this to build a structure bottom-up from target loss probabilities (for example mezzanine ≤ 30\%, senior ≤ 0.5\% over the life):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Each attachment = the \texttt{(1\ −\ target)} quantile of lifetime pool losses.
+\item
+  Attachments are rounded \textbf{up} to the next 0.25\%, so subordination is never less than required.
+\item
+  Targets must fall from junior to senior, and the first-loss piece must not come out empty; otherwise the function raises an error that the UI shows as a warning.
+\item
+  Coupons are set to each tranche's fair spread; holders follow the classic SRT shape (first loss retained, mezzanine sold, senior retained).
+\end{enumerate}
+
+This mirrors, in a much simpler form, how rating approaches size tranches against a target probability of loss or expected loss. Agencies use many more assumptions (loan-level default curves, concentration, cash-flow stresses, sovereign and counterparty caps), so the output is not a rating.
+
+\texttt{attachment\_for\_target\_el} is the expected-loss-based alternative (solved with Brent's method).
+
+\section{Credit: the cash-flow waterfall}\label{credit-the-cash-flow-waterfall}
+
+\subsection{Collateral}\label{collateral}
+
+Monthly, for a pool with balance \texttt{B}, annual coupon (WAC), term, amortisation type, annual default rate (CDR), annual prepayment rate (CPR), loss severity, recovery lag and servicing fee. Annual rates become monthly rates as \texttt{1\ −\ (1\ −\ annual)\^{}(1/12)} (the single monthly mortality, SMM, for prepayments; the monthly default rate, MDR, for defaults).
+
+Each month, in this order:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Defaults} = performing balance × MDR. Loss = defaults × severity, recognised now. Recovery = defaults × (1 − severity), received \texttt{lag} months later.
+\item
+  \textbf{Interest} = surviving balance × WAC / 12.
+\item
+  \textbf{Scheduled principal}: level pay (an annuity: equal payments over the remaining term) or bullet (all at maturity).
+\item
+  \textbf{Prepayments} = (surviving balance − scheduled principal) × SMM.
+\end{enumerate}
+
+The model runs \texttt{term\ +\ recovery\ lag} months so every recovery is collected.
+
+\subsection{Interest waterfall}\label{interest-waterfall}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Servicing fee on the beginning performing balance.
+\item
+  Note coupons, \textbf{senior first}, on each note's current balance. Any unpaid amount is recorded as an interest shortfall.
+\item
+  \textbf{Excess spread} covers the month's losses: that amount is paid out as principal (``turbo''), so losses are absorbed by interest income before they reach the notes.
+\item
+  What remains goes to the equity (residual) holder.
+\end{enumerate}
+
+\subsection{Losses and principal}\label{losses-and-principal}
+
+\begin{itemize}
+\tightlist
+\item
+  Losses not covered by excess spread \textbf{write down tranches from the bottom up}: equity first.
+\item
+  Principal (scheduled + prepayments + recoveries + loss cover) pays the notes \textbf{sequentially}: the senior until it is repaid, then the next, with the equity last. Leftover cash goes to the equity.
+\item
+  The bottom tranche is the equity: no coupon, it receives residual cash.
+\end{itemize}
+
+\textbf{Invariant (tested every month):} total outstanding notes = performing loans + recoveries still to come. Cash is conserved: interest + principal + recoveries collected = fees + coupons + principal paid + residual.
+
+\subsection{Outputs}\label{outputs}
+
+\begin{itemize}
+\tightlist
+\item
+  Per tranche: interest and principal received, residual cash (equity), principal loss \%, interest shortfall, \textbf{weighted average life} (WAL = Σ t × principal\_t ÷ Σ principal\_t, in years) and \textbf{IRR} (annualised, bought at par at time 0, solved with Brent's method).
+\item
+  \textbf{Day-one excess spread} = WAC − servicing fee − Σ thickness × coupon over the notes.
+\item
+  \textbf{Breakeven CDR}: the highest constant annual default rate at which the tranche still gets its principal back (loses less than 0.01\%), found by bisection with every other assumption unchanged. A higher breakeven means more protection.
+\item
+  \textbf{Stress grid:} principal loss \% by tranche for CDRs from 0\% to 20\%.
+\end{itemize}
+
+\subsection{Why sequential pay}\label{why-sequential-pay}
+
+Sequential pay is the simplest and most protective structure for the senior notes: it shortens the senior's life and builds up subordination as the pool amortises. Real deals often switch between pro-rata and sequential pay on triggers; see Limitations.
+
+\section{Credit: regulatory capital and SRT economics}\label{credit-regulatory-capital-and-srt-economics}
+
+\subsection{IRB capital for the pool}\label{irb-capital-for-the-pool}
+
+The Basel internal ratings-based (IRB) capital requirement per unit of exposure is the 99.9\% Vasicek loss minus expected loss, with a maturity adjustment for corporates:
+
+\begin{equation}
+K=\left[\mathrm{LGD}\,\Phi\!\left(\frac{\Phi^{-1}(\mathrm{PD})+
+\sqrt{R}\,\Phi^{-1}(0.999)}{\sqrt{1-R}}\right)-\mathrm{PD}\cdot\mathrm{LGD}\right]
+\mathrm{MA}.
+\end{equation}
+
+\noindent\textbf{Asset-correlation assumptions.} For corporate exposures, the parameter is PD-dependent:
+\begin{align}
+R_{\mathrm{corp}}&=0.12w_{50}+0.24(1-w_{50}), &
+ w_{k}&=\frac{1-e^{-k\,\mathrm{PD}}}{1-e^{-k}}. \\
+R_{\mathrm{retail,other}}&=0.03w_{35}+0.16(1-w_{35}).
+\end{align}
+The implementation also uses 15\% for residential mortgages and 4\% for qualifying revolving retail exposures.
+
+\noindent\textbf{Corporate maturity adjustment.} With $M$ clamped to 1--5 years,
+\begin{equation}
+b=(0.11852-0.05478\ln\mathrm{PD})^2,\qquad
+\mathrm{MA}=\frac{1+(M-2.5)b}{1-1.5b}.
+\end{equation}
+The configurable PD floor is 0.05\%. The resulting risk weight is $12.5K$ and risk-weighted assets are $12.5K\times\mathrm{EAD}$.
+
+The implementation reproduces published reference points: a corporate exposure with PD 1\%, LGD 45\% and M = 2.5 has a 92.32\% risk weight, and PD 0.03\% gives 14.44\% (tested).
+
+\subsection{KIRB}\label{kirb}
+
+For securitisations the pool capital includes expected loss: \texttt{KIRB\ =\ K\ +\ PD\ ×\ LGD}. It is the capital the bank would hold if it kept the whole pool, and the anchor of the securitisation framework: tranches below it are treated as if they absorb the pool's entire capital requirement.
+
+\subsection{SEC-IRBA}\label{sec-irba}
+
+The securitisation internal ratings-based approach (Basel CRE44; EU CRR Article 259) risk-weights a tranche \texttt{{[}A,\ D{]}} with the simplified supervisory formula approach (SSFA):
+
+\begin{align}
+p&=\max\!\left(0.3,\,A_{\!s}+\frac{B_{\!s}}{N}+C_{\!s}K_{\mathrm{IRB}}+D_{\!s}\mathrm{LGD}+E_{\!s}M_T\right),\\
+a&=-\frac{1}{pK_{\mathrm{IRB}}}, & u&=D-K_{\mathrm{IRB}}, & l&=\max(A-K_{\mathrm{IRB}},0),\\
+K_{\mathrm{SSFA}}&=\frac{e^{au}-e^{al}}{a(u-l)}.
+\end{align}
+
+The subscript \(s\) denotes supervisory parameters, to distinguish them from tranche attachment and detachment. \(M_T\) is tranche maturity (clamped to 1--5 years).
+
+Supervisory parameters:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1600}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1733}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0933}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0933}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0933}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0933}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0933}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Exposure}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Seniority}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Granularity}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{$\mathrm{A}_s$}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{$\mathrm{B}_s$}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{$\mathrm{C}_s$}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{$\mathrm{D}_s$}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{$\mathrm{E}_s$}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Wholesale & Senior & N ≥ 25 & 0.00 & 3.56 & −1.85 & 0.55 & 0.07 \\
+Wholesale & Senior & N \textless{} 25 & 0.11 & 2.61 & −2.91 & 0.68 & 0.07 \\
+Wholesale & Non-senior & N ≥ 25 & 0.16 & 2.87 & −1.03 & 0.21 & 0.07 \\
+Wholesale & Non-senior & N \textless{} 25 & 0.22 & 2.35 & −2.46 & 0.48 & 0.07 \\
+Retail & Senior & n/a & 0.00 & 0.00 & −7.48 & 0.71 & 0.24 \\
+Retail & Non-senior & n/a & 0.00 & 0.00 & −5.78 & 0.55 & 0.27 \\
+\end{longtable}
+
+Risk weight:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{D\ ≤\ KIRB}: \textbf{1,250\%} (the tranche is effectively deducted from capital).
+\item
+  \texttt{A\ ≥\ KIRB}: \texttt{12.5\ ×\ KSSFA}.
+\item
+  \texttt{A\ \textless{}\ KIRB\ \textless{}\ D}: a blend, \texttt{{[}(KIRB\ −\ A)/(D\ −\ A){]}\ ×\ 1,250\%\ +\ {[}(D\ −\ KIRB)/(D\ −\ A){]}\ ×\ 12.5\ ×\ KSSFA}.
+\item
+  Floor \textbf{15\%}. For \textbf{STS} securitisations (EU Article 260) \texttt{p} is halved (still floored at 0.3) and the senior floor is \textbf{10\%}.
+\end{itemize}
+
+\texttt{p} is a non-neutrality parameter: higher \texttt{p} means more capital for tranches above KIRB. The senior flag is set for the top tranche; \texttt{N} is the effective number of exposures.
+
+\subsection{SRT economics}\label{srt-economics}
+
+In a synthetic risk transfer the bank keeps the loans but buys credit protection on a slice, typically the mezzanine, from investors who post cash collateral. \texttt{srt\_economics} computes:
+
+\begin{align}
+\mathrm{RWA}_{\mathrm{before}}&=12.5\,K\,\mathrm{EAD},\\
+\mathrm{RWA}_{\mathrm{after}}&=\min\!\left(\mathrm{RWA}_{\mathrm{before}},
+\sum_{j\in\mathrm{retained}}\mathrm{RW}^{\mathrm{SEC\text{-}IRBA}}_j N_j\right),\\
+\mathrm{Capital}_{\mathrm{released}}&=(\mathrm{RWA}_{\mathrm{before}}-\mathrm{RWA}_{\mathrm{after}})\,c,\\
+\mathrm{Cost}_{\mathrm{annual}}&=\sum_{j\in\mathrm{sold}}s_j N_j,\\
+\mathrm{Cost\ of\ relief}&=\frac{\mathrm{Cost}_{\mathrm{annual}}}{\mathrm{Capital}_{\mathrm{released}}}.
+\end{align} Here \(c\) is the capital ratio, \(s_j\) the sold-tranche premium, and \(N_j\) its notional. The simplified economic criterion is that the cost of relief falls below the assumed cost of equity.
+
+The default example (EUR 2bn corporate pool, PD 1.2\%, LGD 40\%, retained 0-1\%, sold 1-8.5\% at a 10\% premium) gives K ≈ 6.99\%, KIRB ≈ 7.47\%, RWA falling from about 1.75bn to 0.61bn, about 136m of capital released at a 12\% capital ratio, and a cost of relief of about 11.0\%, just below a 12\% cost of equity.
+
+\subsection{How thick should the sold tranche be?}\label{how-thick-should-the-sold-tranche-be}
+
+\texttt{senior\_boundary\_sweep} moves the boundary between the senior tranche and the tranche below it and reruns the economics. The chart shows the core SRT trade-off: while the sold tranche ends below KIRB, the retained senior still straddles KIRB and relief is small, so the cost of relief is very high. Just above KIRB relief jumps. Beyond that, the senior hits its 15\% floor, so extra premium buys little extra relief and the cost of relief rises again. The optimum usually sits a little above KIRB.
+
+\PartMarker{04}{Implementation and controls}
+
+\section{The Streamlit app}\label{the-streamlit-app}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Two pages} with \texttt{st.navigation}: options strategy lab and credit structuring.
+\item
+  \textbf{Inputs live in session state.} Widget defaults are set once in \texttt{st.session\_state}, never via a widget's \texttt{value} argument, to avoid Streamlit's ``set twice'' warnings. \texttt{app.py} re-saves the listed keys on every run, because Streamlit otherwise forgets the state of widgets on a page that is not on screen, which would reset the sidebar each time you switch pages.
+\item
+  \textbf{Editable tables} (legs and tranches) use \texttt{st.data\_editor}. The base table is stored separately and the editor's key carries a version number: loading a preset, re-centring legs or applying the structuring assistant bumps the version, which resets the editor cleanly. The latest edits are saved so they survive a page switch. Changing spot does \emph{not} reset the legs (so custom positions are kept); ``Re-centre on spot'' does.
+\item
+  \textbf{Input parsing is forgiving.} Incomplete rows are ignored, bad rows produce a warning naming the row, and an invalid capital structure stops the page with the exact problem.
+\item
+  \textbf{Caching} (\texttt{st.cache\_data}) is used only where it pays: Monte Carlo losses and breakeven CDRs (each a 40-step bisection over full waterfall runs). Everything else is fast enough to recompute.
+\item
+  \textbf{Sliders keyed by horizon.} Day sliders include the horizon in their key, so changing expiries resets them instead of leaving a value outside the new range.
+\item
+  \textbf{Charts} use a fixed colour set (green gain, red loss, blue accent, amber spot and highlights) on transparent backgrounds so they read in light and dark themes.
+\end{itemize}
+
+\section{Testing and verification}\label{testing-and-verification}
+
+209 pytest tests, also run on an older dependency set (Streamlit 1.50, Plotly 5.24, pandas 2.2, NumPy 2.1).
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1650}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8350}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Area}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{What is checked}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Pricing & textbook value (S = K = 100, T = 1, r = 5\%, σ = 20\%: call 10.4506, put 5.5735); put-call parity; scalar vs vectorised; expiry and zero-vol limits; every Greek against finite differences; implied vol round trips and NaN outside bounds; binomial convergence; American put premium; no early exercise of calls without dividends \\
+Smile & flat model; ATM vol at the forward; skew and smile shapes; parallel shift; floor; flat wings \\
+Positions & closed-form max profit, max loss and breakevens for calls, spreads, straddles, condors; box and conversion lock in the risk-free rate; zero P\&L at inception; premium override; linear scaling with multiplier and lots; vega predicts a 1-point vol move; sticky-moneyness delta against finite differences; exact probability of profit for a long future; every preset analyses; \textbf{every preset's Greek-sign notes}; the smile never changes whether a preset's risk is unlimited; input validation \\
+Sizing & max-loss and stress bases; wider stress means fewer lots; no-loss positions; delta hedge neutralises delta \\
+Copula & quantile inverts CDF; density integrates to 1; mean loss = PD × LGD; tranche ELs add up to the pool; correlation moves risk from equity to senior; Monte Carlo converges to the large pool; solvers hit targets; spreads fall with seniority; credit triangle \\
+Waterfall & full repayment without defaults; cash conservation; collateral backs the notes every month; losses hit the bottom first; sequential WAL ordering; prepayments shorten WAL; excess spread protects the equity; bullet repayment; breakeven CDR is the edge of loss; stress grid is monotone \\
+Capital & Basel reference risk weights; retail formula against an independent implementation; correlations; KIRB; \texttt{p} and KSSFA by hand; 1,250\% region, 15\% and 10\% floors; risk weight falls with attachment; the SRT example; sell-everything and keep-everything limits; a thicker sold tranche releases more capital \\
+App & every strategy renders; multiplier and lots scale the numbers; smiles and sticky rules; every credit template; Monte Carlo, STS, retail and bullet options; the structuring assistant replaces the structure \\
+\end{longtable}
+
+Beyond the tests, both pages were run in a headless browser and every tab was checked visually. That review caught and fixed: truncated metric values, overlapping chart labels, unreadable log-axis ticks, a misplaced cost-of-equity label, \texttt{-0.00} IRRs and the ``unlimited profit'' artefact described in section 5.2.
+
+\section{Limitations}\label{limitations}
+
+\textbf{Options}
+
+\begin{itemize}
+\tightlist
+\item
+  European exercise only in the strategy lab; American options (early exercise, assignment risk on short legs, which breaks box spreads) are not modelled. The binomial tree exists in the library but is not wired in.
+\item
+  Continuous dividend yield only: no discrete dividends, borrow costs or hard-to-borrow fees.
+\item
+  One parametric smile with no term structure of ATM vol (every expiry has the same ATM vol) and no smile dynamics beyond the two sticky rules. No local or stochastic volatility, no jumps, no arbitrage checks on user-chosen smile parameters (extreme custom values can create calendar or butterfly arbitrage).
+\item
+  Flat interest rates, no rate curve.
+\item
+  No bid-ask spreads, commissions, slippage or margin requirements; ``risk budget'' sizing ignores margin.
+\item
+  Probability of profit is risk-neutral, not real-world.
+\item
+  Scenario grid uses parallel vol shifts only (no skew steepening, no term-structure twists).
+\item
+  Max profit/loss are measured on a grid up to \texttt{max(5\ ×\ spot,\ 2\ ×\ top\ strike)}; ``unlimited'' is inferred from the slope at the top of that range.
+\end{itemize}
+
+\textbf{Credit: copula}
+
+\begin{itemize}
+\tightlist
+\item
+  One factor, one correlation, one PD and one LGD for the whole pool (homogeneous), apart from Monte Carlo loan sizes. LGD is deterministic.
+\item
+  No base-correlation calibration to market tranche quotes, so spreads will not match traded index tranches.
+\item
+  Flat hazard rate, flat discount rate, no upfront payments, no accrued-premium-on-default details.
+\item
+  The Gaussian copula has thin joint tails; its Gaussian tail assumptions can materially understate correlated tail risk.
+\item
+  Fair spread is a pure expected-loss price with no risk premium.
+\end{itemize}
+
+\textbf{Credit: waterfall}
+
+\begin{itemize}
+\tightlist
+\item
+  Constant CDR, CPR and severity over the life (no default or prepayment curves, no seasoning, no vectors).
+\item
+  No triggers (overcollateralisation or interest-coverage tests), reserve accounts, pro-rata pay, call options, interest-rate hedges, revolving or reinvestment periods, or step-up coupons.
+\item
+  Fixed-rate collateral and notes only.
+\item
+  Losses recognised at default, recoveries after a fixed lag; no delinquency pipeline.
+\item
+  The equity IRR assumes purchase at par.
+\end{itemize}
+
+\textbf{Credit: capital and SRT}
+
+\begin{itemize}
+\tightlist
+\item
+  Simplified: no significant-risk-transfer tests, no maturity mismatch adjustment between protection and loans, no synthetic excess spread, no output floor, no maximum capital requirement cap beyond RWA after ≤ RWA before, no SEC-SA or SEC-ERBA fallbacks, no treatment of non-collateralised protection (counterparty risk), no supervisory approval process, no IFRS 9 or accounting effects.
+\item
+  The pool is homogeneous (one PD, LGD, maturity), and the effective number of exposures is an input rather than computed from loan sizes.
+\item
+  ``Capital released'' uses a single capital ratio; real banks look at several constraints (CET1, leverage, large exposures, MREL).
+\item
+  Regulatory parameters follow the EU CRR implementation of Basel III securitisation rules as written into the code; check current rules before relying on any number.
+\end{itemize}
+
+\textbf{General}
+
+\begin{itemize}
+\tightlist
+\item
+  Learning and first-pass analysis tool. Not investment advice; not a pricing, risk or regulatory reporting system.
+\end{itemize}
+
+\section{Glossary}\label{glossary}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2294}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7706}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Term}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Meaning}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+ATM & At the money: strike at (or near) spot or the forward \\
+Attachment / detachment & Pool loss levels at which a tranche starts and stops absorbing losses \\
+Breakeven & Underlying price at which P\&L is zero \\
+Breakeven CDR & Highest constant default rate at which a tranche still repays in full \\
+CDR / CPR & Constant (annual) default rate / constant prepayment rate \\
+Credit enhancement & Protection below a tranche: subordination, excess spread, reserves \\
+Credit triangle & Spread ≈ default intensity × loss given default \\
+EAD & Exposure at default \\
+Excess spread & Collateral interest left after fees and note coupons \\
+Expected loss (EL) & Probability-weighted average loss: PD × LGD for one loan \\
+First loss / equity & The bottom tranche, attaching at 0\% \\
+Forward & \texttt{S·e\^{}((r−q)T)}: the arbitrage-free price for delivery at T \\
+Gaussian copula & Model linking defaults through correlated normal variables \\
+Greeks & Sensitivities of an option's value: delta, gamma, theta, vega, rho \\
+IRB & Basel internal ratings-based approach to credit risk capital \\
+KIRB & IRB capital of the pool including expected loss \\
+LGD / severity & Loss given default: share of exposure lost when a borrower defaults \\
+Lot & One unit of a strategy as written \\
+Moneyness & How far a strike is from spot or the forward \\
+Multiplier & Units of underlying per contract \\
+PD & Probability of default \\
+Put-call parity & \texttt{C\ −\ P\ =\ S·e\^{}(−qT)\ −\ K·e\^{}(−rT)} for European options \\
+RWA & Risk-weighted assets; capital required = RWA × capital ratio \\
+SEC-IRBA & Securitisation IRB approach for tranche risk weights \\
+Sequential pay & Principal repays the most senior outstanding note first \\
+Smile / skew & Pattern of implied vol across strikes \\
+SRT & Significant (synthetic) risk transfer: buying protection on a tranche to cut capital \\
+SSFA & Simplified supervisory formula approach (the KSSFA formula) \\
+Sticky strike / moneyness & Assumptions about how implied vols move when spot moves \\
+STS & Simple, transparent and standardised securitisation (EU label with lower capital) \\
+Subordination & Tranches below a given tranche that absorb losses first \\
+Vasicek distribution & Large-pool loss distribution of the one-factor Gaussian model \\
+WAC & Weighted average coupon of the collateral \\
+WAL & Weighted average life of principal repayments \\
+\end{longtable}
+
+\section{References}\label{references}
+
+\begin{itemize}
+\tightlist
+\item
+  Black, F. and Scholes, M. (1973), ``The Pricing of Options and Corporate Liabilities'', \emph{Journal of Political Economy}. Merton, R. (1973), ``Theory of Rational Option Pricing'', \emph{Bell Journal of Economics}.
+\item
+  Cox, J., Ross, S. and Rubinstein, M. (1979), ``Option Pricing: A Simplified Approach'', \emph{Journal of Financial Economics}.
+\item
+  Hull, J., \emph{Options, Futures, and Other Derivatives} (Pearson).
+\item
+  Natenberg, S., \emph{Option Volatility and Pricing} (McGraw-Hill).
+\item
+  Gatheral, J. (2006), \emph{The Volatility Surface} (Wiley).
+\item
+  Vasicek, O. (2002), ``The Distribution of Loan Portfolio Value'', \emph{Risk}.
+\item
+  Li, D. (2000), ``On Default Correlation: A Copula Function Approach'', \emph{Journal of Fixed Income}.
+\item
+  Gordy, M. (2003), ``A Risk-Factor Model Foundation for Ratings-Based Bank Capital Rules'', \emph{Journal of Financial Intermediation}.
+\item
+  Basel Committee on Banking Supervision, \emph{An Explanatory Note on the Basel II IRB Risk Weight Functions} (2005).
+\item
+  Basel Committee on Banking Supervision, Basel Framework, CRE31 (IRB risk weights) and CRE44 (SEC-IRBA).
+\item
+  Regulation (EU) No 575/2013 (Capital Requirements Regulation), Articles 153-154 and 259-260, as amended by Regulation (EU) 2017/2401.
+\end{itemize}
+
+\end{document}
