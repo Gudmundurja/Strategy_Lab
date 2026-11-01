@@ -195,9 +195,4 @@ regulatory reporting system.
 * The SRT calculator leaves out the significant-risk-transfer tests, maturity mismatch, synthetic excess
   spread, the output floor and supervisory approval.
 
-## How this was built
 
-I built this with Claude, Anthropic's AI assistant, as a pair programmer. I set the scope and direction
-(which strategies, products, models and techniques to cover, and how the app should work), and Claude wrote
-most of the code, tests and documentation. The results are checked by the test suite: every Monte Carlo price
-with a closed-form counterpart is tested against it, and the formulas are cross-checked against each other.
